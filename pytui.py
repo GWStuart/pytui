@@ -4,9 +4,12 @@ import os
 
 
 class Program:
-    def __init__(self):
-        subprocess.run(["tput", "smcup"])
-        ANSI.hide_cursor()
+    STARTING_COLOUR = (30, 30, 30)
+
+    def __init__(self, use_alternative_screen=True):
+        if use_alternative_screen:
+            subprocess.run(["tput", "smcup"])
+        # ANSI.hide_cursor()
         ANSI.clear_screen()
 
     def quit(self):
@@ -22,11 +25,20 @@ class Program:
             if key == k or key == 3:
                 return
     
-    def fill(self, character, fg=None, bg=None):
+    def fill(self, character, fg=None, bg=None, numbered=False):
         ANSI.clear_screen()
         columns, rows = os.get_terminal_size()
+        print("HIHIHI")
         for row in range(rows):
-            ANSI.print(character * columns, bg=bg, fg=fg)
+            if numbered:
+                line_num = str(row)
+                ANSI.print(line_num + character * (columns - len(line_num)), bg=bg, fg=fg)
+            else:
+                ANSI.print(character * columns, bg=bg, fg=fg)
+
+    def write(self, text, row, column):
+        ANSI.move_cursor(row, column)
+        ANSI.print(text, bg=self.STARTING_COLOUR, fg=None)
 
 class ANSI:
     ESC = "\033"
@@ -54,7 +66,7 @@ class ANSI:
         if fg:
             r, g, b = fg
             print(f"{ANSI.CSI}38;2;{r};{g};{b}m", end="")
-        print(message, end="")
+        print(message) # , end="")
         ANSI.clear_sgr()
 
     def clear_sgr():
